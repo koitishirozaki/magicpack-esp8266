@@ -5,10 +5,11 @@
 #include <WakeOnLan.h>
 
 // Config
-const char *ssid = "mywifi";
-const char *password = "mywifi";
+const char *SSID = "mywifi";
+const char *PASSWORD = "mywifi";
 const char *MAC = "00:00:00:00:00";
 const char *SECRET_TOKEN = "mysecrettoken";
+const int PORT = 12345;
 
 // Wifi
 WiFiUDP UDP;
@@ -19,7 +20,7 @@ WiFiEventHandler wifiConnectHandler;
 WiFiEventHandler wifiDisconnectHandler;
 
 // Magic packet
-ESP8266WebServer server(12345);
+ESP8266WebServer server(PORT);
 WakeOnLan WOL(UDP);
 
 // Blinker
@@ -55,9 +56,9 @@ void initWifi()
   WiFi.setAutoReconnect(true);
   WiFi.persistent(true);
 
-  Serial.printf("\nTrying to connect to %s", ssid);
+  Serial.printf("\nTrying to connect to %s", SSID);
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
+  WiFi.begin(SSID, PASSWORD);
   while (WiFi.status() != WL_CONNECTED)
   {
     Serial.print(".");
