@@ -4,10 +4,14 @@
 #include <ESP8266WebServer.h>
 #include <WakeOnLan.h>
 
-// Wifi
-WiFiUDP UDP;
+// Config
 const char *ssid = "mywifi";
 const char *password = "mywifi";
+const char *MAC = "00:00:00:00:00";
+const char *SECRET_TOKEN = "mysecrettoken";
+
+// Wifi
+WiFiUDP UDP;
 unsigned long previousMillis = 0;
 unsigned long interval = 30000;
 
@@ -17,7 +21,6 @@ WiFiEventHandler wifiDisconnectHandler;
 // Magic packet
 ESP8266WebServer server(12345);
 WakeOnLan WOL(UDP);
-const char *MAC = "00:00:00:00:00:00";
 
 // Blinker
 bool lastStatus = false;
@@ -79,10 +82,27 @@ void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
 
 void wakePC()
 {
+  if (!server.hasArg("token"))
+  {
+    server.send(401, "text/plain", "Unauthorized: Missing token");
+    Serial.println("Unauthorized access attempt: Missing token");
+    return;
+  }
+
+  // Verify token
+  String providedToken = server.arg("token");
+  if (providedToken != SECRET_TOKEN)
+  {
+    server.send(403, "text/plain", "Forbidden: Invalid token");
+    Serial.println("Unauthorized access attempt: Invalid token");
+    return;
+  }
+
   blinkPeriod(8, 100);
   WOL.sendMagicPacket(MAC);
   delay(1000);
   server.send(200, "text/plain", "Magic Packet sent to " + String(MAC));
+  Serial.println("Magic packet sent successfully");
 }
 
 void setup()
